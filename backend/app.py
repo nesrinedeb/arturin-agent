@@ -10,10 +10,10 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "llama-3.3-70b-versatile"
 
-ARTURIN_CONTEXT = """Tu es un assistant stratégique, analytique et commercial pour Artur'in.
-Positionnement : partenaire communication des réseaux multi-points de vente. IA + expertise sectorielle. Mission : offrir à chaque entreprise locale la vitrine digitale qu'elle mérite. Piliers : on vous trouve / on vous choisit / on vous recommande.
-Clients typiques : agents immobiliers, opticiens, pharmaciens, dentistes, assureurs, avocats, notaires, experts-comptables, CGP/CGPI, coaches sportifs, garagistes, concessionnaires.
-BASE UPSELLS : Shoot'In 30€/mois (12 mois) | Site web 295€HT création + 70€HT/mois (12 mois, pas de préavis) | Boost'In dès 50€/mois (6 mois) | Multi-sites 59€/établissement | Contenu EFL 60€/mois (8 articles/mois) | Seeble 30-80€/mois (prospection LinkedIn) | LinkedIn supplémentaire 50€/mois | Self'in gratuit (10 publications IA personnalisées, formulaire : https://forms.fillout.com/t/hdEdvdk4wrus) | Renouvellement Essilor : UNIQUEMENT opticiens, 1200€/6 mois ou 2400€/12 mois + Shoot'in offert."""
+ARTURIN_CONTEXT = """Tu es un assistant interne pour l'équipe Customer Success d'Artur'in.
+Artur'in est une plateforme de communication digitale pour les professionnels locaux (agents immobiliers, opticiens, assureurs, pharmaciens, dentistes, avocats, notaires, experts-comptables, coaches sportifs, garagistes...).
+Produits Artur'in : publications réseaux sociaux automatisées, newsletter, Seeble (prospection LinkedIn automatisée), Shoot'in (photos pro 30€/mois), Boost'in (publicité Google/Meta dès 50€/mois), site web (295€HT + 70€HT/mois), Multi-sites (59€/établissement), Self'in (gratuit, 10 publications IA personnalisées).
+Renouvellement Essilor : UNIQUEMENT pour les opticiens — 1200€/6 mois ou 2400€/12 mois + Shoot'in offert."""
 
 def call_groq(prompt):
     headers = {
@@ -22,9 +22,15 @@ def call_groq(prompt):
     }
     body = {
         "model": MODEL,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [
+            {
+                "role": "system",
+                "content": "Tu es un assistant Customer Success pour Artur'in. Tu génères des comptes-rendus de calls internes, structurés et prêts à copier dans Salesforce. Tu respectes EXACTEMENT les formats demandés sans jamais t'en écarter."
+            },
+            {"role": "user", "content": prompt}
+        ],
         "max_tokens": 2000,
-        "temperature": 0.3
+        "temperature": 0.2
     }
     response = requests.post(GROQ_URL, headers=headers, json=body, timeout=60)
     data = response.json()
@@ -40,48 +46,69 @@ def mission1():
 
         prompt = f"""{ARTURIN_CONTEXT}
 
-MISSION 1 — COMPTE-RENDU DE CALL
-Client : {client}
-{f"Contexte : {context}" if context else ""}
-Transcription : {transcription}
+MISSION : Génère un compte-rendu de call INTERNE, synthétique, prêt à copier dans Salesforce.
 
-Génère le CR en respectant STRICTEMENT ces règles :
-- Chaque ➤ doit commencer sur une NOUVELLE ligne (jamais deux ➤ sur la même ligne horizontale)
-- Titres en MAJUSCULES avec émoji, sans numéro
-- Utilise "je" pour parler de l'agent CS
-- Prêt à copier dans Salesforce (aucune balise, aucune citation numérotée)
-- ZÉRO pitch produit dans les points discutés — données brutes client uniquement
-- Ne pas suivre l'ordre chronologique — regrouper par thèmes
+CLIENT : {client}
+{f"CONTEXTE SUPPLÉMENTAIRE : {context}" if context else ""}
+TRANSCRIPTION DU CALL : {transcription}
 
-FORMAT OBLIGATOIRE :
+RÈGLES ABSOLUES — si tu ne les respectes pas, le CR est inutilisable :
+1. Chaque puce ➤ doit être sur sa PROPRE ligne — JAMAIS deux ➤ sur la même ligne horizontale
+2. Titres de section en MAJUSCULES avec émoji — sans numéro, sans point
+3. Utilise "je" pour les actions du CS (ex: "j'ai proposé", "je vais envoyer")
+4. ZÉRO description de produit — l'équipe connaît déjà tout
+5. Données brutes uniquement : chiffres, citations, décisions concrètes
+6. NE PAS suivre l'ordre chronologique — regroupe par thèmes logiques
+7. Maximum 2-3 puces ➤ par thématique
+8. IMPORTANT : le texte doit être propre, sans balises, sans numéros de source
+
+GÉNÈRE CE FORMAT EXACT :
+
 ────────────────────
 {client} — Compte-rendu
 
 🔜 A VOIR AU PROCHAIN CALL
-[Ce que le CS devra creuser. Si rien : RAS. Optionnel : upsell possible max 100 caractères]
+[Liste les points précis à creuser/vérifier au prochain call. Si rien de spécifique : RAS]
+[Si pertinent, sur une ligne séparée : suggestion d'upsell en max 100 caractères]
 
 🔋 RÉSUMÉ EXPRESS
-[Résumé rapide du CR pour relire avant le prochain call]
+[3-5 phrases : qui est le client + ce qu'on a fait ensemble + ce qui reste à faire + ton à garder pour le prochain call]
 
 👤 PROFIL DU CLIENT
-[STRICTEMENT 2 lignes max]
-➤ [Prénom interlocuteur], [Métier/Rôle/Localisation], humeur : [3 mots]
-➤ Niveau digital : [niveau constaté] | État du commerce : [infos business si mentionnées]
+➤ [Prénom exact de l'interlocuteur trouvé dans la transcription], [Métier/Rôle/Localisation], humeur : [3 adjectifs précis qui reflètent vraiment le call]
+➤ Niveau digital : [Faible/Moyen/Bon selon ce qu'on observe] | État du commerce : [situation business concrète mentionnée]
 
 📝 POINTS DISCUTÉS
-[2-3 dossiers thématiques MAX en MAJUSCULES, puces ➤ en dessous, max 2-3 puces par thème]
-[❤️ Anecdote humaine UNIQUEMENT si mentionnée explicitement dans le call]
+
+[NOM DU PREMIER THÈME EN MAJUSCULES]
+➤ [donnée brute ou citation courte]
+➤ [donnée brute ou citation courte]
+➤ [donnée brute ou citation courte si nécessaire]
+
+[NOM DU DEUXIÈME THÈME EN MAJUSCULES]
+➤ [donnée brute ou citation courte]
+➤ [donnée brute ou citation courte]
+
+[NOM DU TROISIÈME THÈME EN MAJUSCULES si nécessaire]
+➤ [donnée brute ou citation courte]
+
+[❤️ suivi d'une anecdote humaine ou personnelle UNIQUEMENT si le client en a parlé explicitement]
 
 🤝 UPSELL ET SOLUTIONS PRÉSENTÉES
-[Si upsell évoqué : description + réaction client. Sinon : RAS]
+[Si un upsell a été présenté ou discuté : décris-le en 2-3 phrases avec la réaction du client. Sinon : RAS]
 
 ────────────────────
 📍 ACTIONS A FAIRE
-[Actions immédiates du CS. Sinon : RAS]
+➤ [Action précise et immédiate que le CS doit faire]
+➤ [Autre action si nécessaire]
 
 ────────────────────
 💬 FEEDBACK PRODUIT
-[Retours sur produits Artur'in si pertinent. Sinon : omettre cette section]"""
+[Si le client a donné des retours sur les produits Artur'in, liste-les ainsi :]
+Insatisfaction : [nom du produit] — [ce qui ne va pas, max 100 caractères]
+Suggestion : [nom du produit] — [ce qu'il propose, max 100 caractères]
+Satisfaction : [nom du produit] — [ce qui plaît, max 100 caractères]
+[Si aucun feedback produit : omettre cette section]"""
 
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
@@ -102,8 +129,9 @@ def mission2():
 
         if "Site web" in upsell:
             site_web_template = """
-TEMPLATE SITE WEB OBLIGATOIRE dans l'email :
-"Comme convenu, voici la présentation de notre accompagnement site internet.
+Intègre ce bloc OBLIGATOIREMENT dans l'email si site web proposé :
+---
+Comme convenu, voici la présentation de notre accompagnement site internet.
 Notre engagement : un site web professionnel clé en main.
 -> Un accompagnement dédié : chef de projet expert + votre CS coach
 -> Un design à votre image, fidèle à votre marque
@@ -114,38 +142,41 @@ Notre engagement : un site web professionnel clé en main.
 Politique Commerciale :
 -> Frais de création : 295€HT (une seule fois)
 -> Abonnement mensuel : 70€HT/mois
--> Engagement : 12 mois | Pas de préavis" """
+-> Engagement : 12 mois | Pas de préavis
+---"""
 
         if "Self'in" in upsell:
             selfin_template = """
-TEMPLATE SELF'IN OBLIGATOIRE dans l'email :
-"Comme évoqué, voici le lien pour lancer votre test Self'in, fonctionnalité gratuite :
+Intègre ce bloc OBLIGATOIREMENT dans l'email si Self'in proposé :
+---
+Comme évoqué, voici le lien pour lancer votre test Self'in, fonctionnalité gratuite :
 👉 Le concept : 10 publications ultra-personnalisées basées sur votre réalité de terrain
 👉 Votre seule action : remplir ce questionnaire de 3 minutes et envoyer une photo : https://forms.fillout.com/t/hdEdvdk4wrus
 👉 Le résultat : l'IA génère des visuels authentiques qui renforcent le lien avec vos clients
-Rien ne sera publié sans votre validation." """
+Rien ne sera publié sans votre validation.
+---"""
 
         prompt = f"""{ARTURIN_CONTEXT}
 
-MISSION 2 — EMAIL DE SUIVI
-Prénom client : {prenom}
-CS : {cs or "[Ton prénom]"}
-Contenu call/CR : {content}
-{f"Upsell évoqué : {upsell}" if upsell else "Aucun upsell"}
+MISSION : Rédige un email de suivi professionnel, chaleureux et prêt à envoyer au client.
 
-Objet : "Artur'in - Suivi de notre appel"
-
-Génère l'email avec :
-1. Mini-résumé chaleureux avec détail humain/personnel du call
-2. Récapitulatif des points importants + coaching mentionné
-{f"3. Proposition naturelle pour {upsell}" if upsell else "3. Pas de proposition commerciale"}
+PRÉNOM DU CLIENT : {prenom}
+CS QUI ENVOIE : {cs or "[Ton prénom]"}
+CONTENU DU CALL / CR : {content}
+{f"UPSELL ÉVOQUÉ : {upsell}" if upsell else "AUCUN UPSELL"}
 {site_web_template}
 {selfin_template}
-4. Si pertinent : mention d'un sujet pour le prochain call
-5. Bonne journée + signature {cs or "[Ton prénom]"}
 
-TONALITÉ : clarté, simplicité, bienveillance, proximité. Humain et professionnel. Pas de jargon.
-SORTIE : uniquement l'email final prêt à envoyer, rien d'autre."""
+RÈGLES D'ÉCRITURE :
+- Objet OBLIGATOIRE : "Artur'in - Suivi de notre appel"
+- Commence par un mini-résumé chaleureux avec UN détail humain ou personnel du call
+- Récapitule les points importants discutés + le coaching donné
+- {"Présente naturellement l'upsell " + upsell + " sans être trop commercial" if upsell else "Pas de proposition commerciale"}
+- Si pertinent : mentionne un sujet à aborder au prochain call
+- Termine par "Bonne journée" + signature {cs or "[Ton prénom]"}
+- Tonalité : claire, simple, bienveillante, proximité. Humain et professionnel. Zéro jargon.
+
+SORTIE : uniquement l'email final complet, rien d'autre avant ou après."""
 
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
@@ -161,28 +192,36 @@ def mission3():
 
         prompt = f"""{ARTURIN_CONTEXT}
 
-MISSION 3 — COACHING POST-CALL
-{f"Contexte : {context}" if context else ""}
-Transcription : {transcription}
+MISSION : Coaching post-call — analyse honnête et sans complaisance de la performance du CS.
 
-Tu es un conseiller stratégique personnel : QI 180, direct, lucide, sans complaisance. Expert en psychologie, vente, stratégie. Zéro excuse, orientation résultat.
+{f"CONTEXTE : {context}" if context else ""}
+TRANSCRIPTION : {transcription}
 
-Fournis :
+Tu es un conseiller stratégique d'élite : direct, lucide, sans complaisance. Expert en vente, psychologie client, gestion de churn. Zéro excuse, orientation résultat.
 
-MÉTRIQUES (0 à 10) :
--> Découverte & qualification : [score/10]
--> Argumentaire & valeur : [score/10]
--> Closing & next step : [score/10]
+GÉNÈRE EXACTEMENT CE FORMAT :
 
-VÉRITÉ BRUTE :
--> 2 à 3 erreurs critiques avec extraits/citations exactes du call
--> 1 à 2 points positifs factuels
+MÉTRIQUES DE PERFORMANCE
+-> Découverte & qualification : [X]/10 — [justification en 1 phrase]
+-> Argumentaire & valeur : [X]/10 — [justification en 1 phrase]
+-> Closing & next step : [X]/10 — [justification en 1 phrase]
 
-UPSELL PRIORITAIRE :
--> Upsell identifié
--> Triggers observés (citations du call)
--> Pitch 20 secondes
--> 2 phrases à tester au prochain call"""
+ERREURS CRITIQUES
+1. [Erreur critique avec citation exacte du call entre guillemets]
+2. [Erreur critique avec citation exacte du call entre guillemets]
+3. [Erreur critique si applicable]
+
+POINTS POSITIFS
+1. [Point positif factuel avec exemple du call]
+2. [Point positif factuel si applicable]
+
+UPSELL PRIORITAIRE
+-> Upsell identifié : [nom du produit]
+-> Pourquoi maintenant : [triggers observés avec citations du call]
+-> Pitch 20 secondes : [pitch direct et percutant]
+-> 2 phrases à tester : 
+   • [Phrase 1]
+   • [Phrase 2]"""
 
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
@@ -191,7 +230,7 @@ UPSELL PRIORITAIRE :
 
 @app.route("/")
 def index():
-    return jsonify({"status": "ok", "message": "Artur'in Agent CS — Backend Groq"})
+    return jsonify({"status": "ok", "message": "Artur'in Agent CS — Backend Groq v2"})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
