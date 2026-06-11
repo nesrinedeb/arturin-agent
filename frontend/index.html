@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artur'in — Agent CS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #2563EB; --blue-l: #93C5FD; --blue-d: #1D4ED8;
+  --bg: #F8FAFF; --card: #FFFFFF; --text: #0F172A;
+  --muted: #64748B; --border: #E2E8F0;
+  --green: #10B981; --orange: #F59E0B; --red: #EF4444;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem; background: white; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--blue); }
+.logo span { color: var(--text); }
+.badge { background: #EFF6FF; color: var(--blue-d); font-size: .75rem; font-weight: 500; padding: .3rem .8rem; border-radius: 99px; border: 1px solid #BFDBFE; }
+.container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+.mission-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin-bottom: 1.5rem; }
+.mission-tab { background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 1rem; cursor: pointer; text-align: center; transition: all .2s; position: relative; }
+.mission-tab:hover { border-color: var(--blue-l); }
+.mission-tab.active { border-color: var(--blue); background: #EFF6FF; }
+.tab-icon { font-size: 1.3rem; margin-bottom: .3rem; }
+.tab-title { font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; }
+.tab-sub { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
+.tab-badge { position: absolute; top: -.5rem; right: -.5rem; background: var(--orange); color: white; font-size: .6rem; font-weight: 700; padding: .15rem .4rem; border-radius: 99px; }
+.card { background: white; border: 1px solid var(--border); border-radius: 18px; padding: 1.8rem; box-shadow: 0 2px 16px rgba(37,99,235,.05); margin-bottom: 1.5rem; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; }
+.form-group { margin-bottom: 1.1rem; }
+label { display: block; font-size: .78rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+input, textarea, select { font-family: 'DM Sans', sans-serif; font-size: .95rem; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: .7rem 1rem; width: 100%; transition: border-color .2s, box-shadow .2s; outline: none; resize: vertical; }
+input:focus, textarea:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+textarea { min-height: 180px; }
+.btn-primary { width: 100%; padding: .9rem; background: linear-gradient(135deg, var(--blue), var(--blue-d)); color: white; border: none; border-radius: 12px; font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700; cursor: pointer; transition: transform .2s, opacity .2s; }
+.btn-primary:hover { transform: translateY(-1px); opacity: .95; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-sec { padding: .5rem 1.1rem; border-radius: 8px; font-size: .82rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--muted); transition: all .2s; font-family: 'DM Sans', sans-serif; }
+.btn-sec:hover { border-color: var(--blue); color: var(--blue); }
+.loader { display: none; text-align: center; padding: 1.5rem; }
+.loader.visible { display: block; }
+.loader-dots { display: flex; justify-content: center; gap: .4rem; margin-bottom: .8rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); animation: bounce .8s infinite; }
+.dot:nth-child(2) { animation-delay: .15s; }
+.dot:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1} }
+.loader-text { color: var(--muted); font-size: .88rem; }
+.result-card { display: none; }
+.result-card.visible { display: block; }
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem; }
+.result-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+.result-actions { display: flex; gap: .5rem; }
+.result-content { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; font-size: .9rem; line-height: 1.8; white-space: pre-wrap; color: var(--text); max-height: 600px; overflow-y: auto; }
+.mission-section { display: none; }
+.mission-section.active { display: block; }
+.tip { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: .8rem 1rem; font-size: .82rem; color: #92400E; margin-bottom: 1.2rem; }
+.error-msg { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; border-radius: 10px; padding: .7rem 1rem; font-size: .85rem; margin-top: .8rem; display: none; }
+.error-msg.visible { display: block; }
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 1.2rem; text-align: center; cursor: pointer;
+  background: var(--bg); transition: all .2s;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--blue); background: #EFF6FF; }
+.upload-zone.loaded { border-color: var(--green); background: #F0FDF4; border-style: solid; }
+.upload-icon { font-size: 1.5rem; margin-bottom: .3rem; }
+.upload-text { font-size: .88rem; font-weight: 500; color: var(--text); }
+.upload-sub { font-size: .75rem; color: var(--muted); margin-top: .2rem; } text-align: center; padding: 2rem; background: #F5F3FF; border-radius: 14px; border: 1.5px dashed #DDD6FE; }
+.coaching-lock h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; margin-bottom: .5rem; }
+.coaching-lock p { color: var(--muted); font-size: .88rem; margin-bottom: 1rem; }
+@media (max-width: 600px) { .mission-tabs { grid-template-columns: 1fr; } nav { padding: 1rem; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">artur<span>'in</span></div>
+  <div class="badge">Agent CS v19 · Claude AI</div>
+</nav>
+<div class="container">
+  <div class="mission-tabs">
+    <div class="mission-tab active" onclick="switchMission(1, this)">
+      <div class="tab-icon">📝</div>
+      <div class="tab-title">Mission 1</div>
+      <div class="tab-sub">Compte-rendu de call</div>
+    </div>
+    <div class="mission-tab" onclick="switchMission(2, this)">
+      <div class="tab-icon">✉️</div>
+      <div class="tab-title">Mission 2</div>
+      <div class="tab-sub">Email de suivi</div>
+    </div>
+    <div class="mission-tab" onclick="switchMission(3, this)">
+      <div class="tab-icon">🎯</div>
+      <div class="tab-title">Mission 3</div>
+      <div class="tab-sub">Coaching post-call</div>
+      <div class="tab-badge">Manuel</div>
+    </div>
+  </div>
+
+  <!-- MISSION 1 -->
+  <div class="mission-section active" id="mission1">
+    <div class="card">
+      <div class="card-title">📝 Compte-rendu de call</div>
+      <div class="tip">💡 Colle la transcription Aircall — le CR sera structuré et prêt pour Salesforce.</div>
+      <div class="form-group">
+        <label>Nom du client / boutique</label>
+        <input type="text" id="m1-client" placeholder="Ex: Pharmacie Dupont — Marie" />
+      </div>
+      <div class="form-group">
+        <label>Contexte rapide (optionnel)</label>
+        <input type="text" id="m1-context" placeholder="Ex: Opticien, 2 boutiques, abonné 6 mois, Seeble actif" />
+      </div>
+      <div class="form-group">
+        <label>Transcription Aircall</label>
+        <div class="upload-zone" id="m1-upload-zone" onclick="document.getElementById('m1-file').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'm1-transcription', 'm1-upload-zone')">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text">Clique ou glisse ton fichier de transcription Aircall ici</div>
+          <div class="upload-sub">Tous formats acceptés (.txt, etc.) — ou colle directement ci-dessous</div>
+        </div>
+        <input type="file" id="m1-file" accept=".txt,.text,.log,.csv,text/plain" style="display:none" onchange="loadFile(event, 'm1-transcription', 'm1-upload-zone')" />
+        <textarea id="m1-transcription" placeholder="La transcription apparaîtra ici après upload, ou colle-la directement..." style="margin-top:.6rem"></textarea>
+      </div>
+      <div class="error-msg" id="m1-error">Merci de renseigner le nom du client et la transcription.</div>
+      <button class="btn-primary" id="m1-btn" onclick="runMission1()">📝 Générer le compte-rendu</button>
+    </div>
+    <div class="loader" id="m1-loader">
+      <div class="loader-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p class="loader-text">Analyse du call en cours...</p>
+    </div>
+    <div class="result-card card" id="m1-result">
+      <div class="result-header">
+        <div class="result-title">✅ Compte-rendu généré</div>
+        <div class="result-actions">
+          <button class="btn-sec" onclick="copyResult('m1-content', this)">📋 Copier pour Salesforce</button>
+          <button class="btn-sec" onclick="sendToMission2()">✉️ Générer l'email →</button>
+        </div>
+      </div>
+      <div class="result-content" id="m1-content"></div>
+    </div>
+  </div>
+
+  <!-- MISSION 2 -->
+  <div class="mission-section" id="mission2">
+    <div class="card">
+      <div class="card-title">✉️ Email de suivi</div>
+      <div class="tip">💡 Colle le CR de la Mission 1 ou une transcription brute.</div>
+      <div class="form-group">
+        <label>Prénom du client</label>
+        <input type="text" id="m2-prenom" placeholder="Ex: Marie" />
+      </div>
+      <div class="form-group">
+        <label>Ton prénom (CS)</label>
+        <input type="text" id="m2-cs" placeholder="Ex: Nesrine" />
+      </div>
+      <div class="form-group">
+        <label>CR ou transcription</label>
+        <textarea id="m2-content" placeholder="Colle ici le compte-rendu (Mission 1) ou la transcription brute..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Upsell évoqué (optionnel)</label>
+        <select id="m2-upsell">
+          <option value="">Aucun upsell</option>
+          <option value="Self'in">Self'in (gratuit)</option>
+          <option value="Shoot'In — 30€/mois (12 mois)">Shoot'In — 30€/mois</option>
+          <option value="Site web — 295€HT création + 70€HT/mois">Site web — 295€HT + 70€HT/mois</option>
+          <option value="Boost'In — dès 50€/mois (6 mois)">Boost'In — dès 50€/mois</option>
+          <option value="Seeble — 30 à 80€/mois">Seeble — 30 à 80€/mois</option>
+          <option value="Multi-sites — 59€/établissement">Multi-sites — 59€/établissement</option>
+          <option value="Contenu EFL — 60€/mois">Contenu EFL — 60€/mois</option>
+          <option value="LinkedIn supplémentaire — 50€/mois">LinkedIn supplémentaire — 50€/mois</option>
+          <option value="Renouvellement Essilor — 1200€/6 mois ou 2400€/12 mois">Renouvellement Essilor</option>
+        </select>
+      </div>
+      <div class="error-msg" id="m2-error">Merci de renseigner le prénom du client et le contenu.</div>
+      <button class="btn-primary" id="m2-btn" onclick="runMission2()">✉️ Générer l'email de suivi</button>
+    </div>
+    <div class="loader" id="m2-loader">
+      <div class="loader-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p class="loader-text">Rédaction de l'email en cours...</p>
+    </div>
+    <div class="result-card card" id="m2-result">
+      <div class="result-header">
+        <div class="result-title">✅ Email prêt à envoyer</div>
+        <div class="result-actions">
+          <button class="btn-sec" onclick="copyResult('m2-content', this)">📋 Copier l'email</button>
+        </div>
+      </div>
+      <div class="result-content" id="m2-content"></div>
+    </div>
+  </div>
+
+  <!-- MISSION 3 -->
+  <div class="mission-section" id="mission3">
+    <div class="card">
+      <div class="card-title">🎯 Coaching post-call</div>
+      <div class="coaching-lock" id="m3-lock">
+        <div style="font-size:2rem;margin-bottom:.8rem">🔒</div>
+        <h3>Activation manuelle requise</h3>
+        <p>Le coaching ne s'active que sur demande explicite. Tape "Coaching" pour déverrouiller.</p>
+        <input type="text" id="m3-unlock" placeholder='Tape "Coaching" pour déverrouiller...' style="max-width:280px;margin:0 auto;text-align:center" oninput="checkUnlock(this.value)" />
+      </div>
+      <div id="m3-form" style="display:none">
+        <div class="tip">⚡ Analyse honnête et sans complaisance de ta performance sur ce call.</div>
+        <div class="form-group">
+          <label>Transcription du call</label>
+          <textarea id="m3-transcription" placeholder="Colle ici la transcription brute..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Contexte (optionnel)</label>
+          <input type="text" id="m3-context" placeholder="Ex: Client opticien, appel de renouvellement, 18 mois d'ancienneté" />
+        </div>
+        <div class="error-msg" id="m3-error">Merci de coller la transcription.</div>
+        <button class="btn-primary" id="m3-btn" onclick="runMission3()">🎯 Lancer le coaching</button>
+      </div>
+    </div>
+    <div class="loader" id="m3-loader">
+      <div class="loader-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p class="loader-text">Analyse de ta performance en cours...</p>
+    </div>
+    <div class="result-card card" id="m3-result">
+      <div class="result-header">
+        <div class="result-title">🎯 Feedback de coaching</div>
+        <div class="result-actions">
+          <button class="btn-sec" onclick="copyResult('m3-content', this)">📋 Copier</button>
+        </div>
+      </div>
+      <div class="result-content" id="m3-content"></div>
+    </div>
+  </div>
+
+</div>
+<script>
+function loadFile(event, textareaId, zoneId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById(textareaId).value = e.target.result;
+    const zone = document.getElementById(zoneId);
+    zone.classList.add('loaded');
+    zone.innerHTML = `<div class="upload-icon">✅</div><div class="upload-text">${file.name} chargé</div><div class="upload-sub">Clique pour changer de fichier</div>`;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.currentTarget.classList.add('dragover');
+}
+
+function handleDrop(event, textareaId, zoneId) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById(textareaId).value = e.target.result;
+    const zone = document.getElementById(zoneId);
+    zone.classList.add('loaded');
+    zone.innerHTML = `<div class="upload-icon">✅</div><div class="upload-text">${file.name} chargé</div><div class="upload-sub">Clique pour changer de fichier</div>`;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+
+
+const CTX = `Tu es un assistant stratégique, analytique et commercial pour Artur'in.
+Positionnement : partenaire communication des réseaux multi-points de vente. IA + expertise sectorielle. Mission : offrir à chaque entreprise locale la vitrine digitale qu'elle mérite. Piliers : on vous trouve / on vous choisit / on vous recommande.
+Clients typiques : agents immobiliers, opticiens, pharmaciens, dentistes, assureurs, avocats, notaires, experts-comptables, CGP/CGPI, coaches sportifs, garagistes, concessionnaires.
+BASE UPSELLS : Shoot'In 30€/mois (12 mois) | Site web 295€HT création + 70€HT/mois (12 mois, pas de préavis) | Boost'In dès 50€/mois (6 mois) | Multi-sites 59€/établissement | Contenu EFL 60€/mois (8 articles/mois) | Seeble 30-80€/mois (prospection LinkedIn) | LinkedIn supplémentaire 50€/mois | Self'in gratuit (10 publications IA personnalisées, formulaire : https://forms.fillout.com/t/hdEdvdk4wrus) | Renouvellement Essilor : UNIQUEMENT opticiens, 1200€/6 mois ou 2400€/12 mois + Shoot'in offert.`;
+
+const P1 = (client, ctx, tr) => `${CTX}
+
+MISSION 1 — COMPTE-RENDU DE CALL
+Client : ${client}
+${ctx ? `Contexte : ${ctx}` : ''}
+Transcription : ${tr}
+
+Génère le CR en respectant STRICTEMENT ces règles :
+- Chaque ➤ doit commencer sur une NOUVELLE ligne (jamais deux ➤ sur la même ligne horizontale)
+- Titres en MAJUSCULES avec émoji, sans numéro
+- Utilise "je" pour parler de l'agent CS
+- Prêt à copier dans Salesforce (aucune balise, aucune citation numérotée)
+- ZÉRO pitch produit dans les points discutés — données brutes client uniquement
+- Ne pas suivre l'ordre chronologique — regrouper par thèmes
+
+FORMAT OBLIGATOIRE :
+────────────────────
+${client} — Compte-rendu
+
+🔜 A VOIR AU PROCHAIN CALL
+[Ce que le CS devra creuser. Si rien : RAS. Optionnel : upsell possible max 100 caractères]
+
+🔋 RÉSUMÉ EXPRESS
+[Résumé rapide du CR pour relire avant le prochain call — ce qu'ils ont vu + ce qui reste]
+
+👤 PROFIL DU CLIENT
+[STRICTEMENT 2 lignes max]
+➤ [Prénom interlocuteur actif dans le call], [Métier/Rôle/Localisation], humeur : [3 mots]
+➤ Niveau digital : [niveau constaté] | État du commerce : [infos business si mentionnées]
+
+📝 POINTS DISCUTÉS
+[2-3 dossiers thématiques MAX en MAJUSCULES, puces ➤ en dessous, max 2-3 puces par thème]
+[❤️ Anecdote humaine UNIQUEMENT si mentionnée explicitement dans le call]
+
+🤝 UPSELL ET SOLUTIONS PRÉSENTÉES
+[Si upsell évoqué : description + réaction client. Sinon : RAS]
+
+────────────────────
+📍 ACTIONS A FAIRE
+[Actions immédiates du CS. Sinon : RAS]
+
+────────────────────
+💬 FEEDBACK PRODUIT
+[Retours sur produits Artur'in si pertinent. Sinon : omettre cette section]`;
+
+const P2 = (prenom, cs, content, upsell) => `${CTX}
+
+MISSION 2 — EMAIL DE SUIVI
+Prénom client : ${prenom}
+CS : ${cs || '[Ton prénom]'}
+Contenu call/CR : ${content}
+${upsell ? `Upsell évoqué : ${upsell}` : 'Aucun upsell'}
+
+Objet : "Artur'in - Suivi de notre appel"
+
+Génère l'email avec :
+1. Mini-résumé chaleureux avec détail humain/personnel du call
+2. Récapitulatif des points importants + coaching mentionné
+${upsell ? `3. Proposition naturelle pour ${upsell}` : '3. Pas de proposition commerciale'}
+${upsell === "Site web — 295€HT création + 70€HT/mois" ? `
+TEMPLATE SITE WEB OBLIGATOIRE dans l'email :
+"Comme convenu, voici la présentation de notre accompagnement site internet.
+Notre engagement : un site web professionnel clé en main.
+-> Un accompagnement dédié : chef de projet expert + votre CS coach
+-> Un design à votre image, fidèle à votre marque
+-> Un contenu co-construit avec vous
+-> Gestion technique complète : domaine, hébergement, sécurisation
+-> Site responsive : ordinateur et mobile
+-> Site optimisé SEO + contenus réguliers
+Politique Commerciale :
+-> Frais de création : 295€HT (une seule fois)
+-> Abonnement mensuel : 70€HT/mois
+-> Engagement : 12 mois | Pas de préavis"` : ''}
+${upsell === "Self'in" ? `
+TEMPLATE SELF'IN OBLIGATOIRE dans l'email :
+"Comme évoqué, voici le lien pour lancer votre test Self'in, fonctionnalité gratuite :
+👉 Le concept : 10 publications ultra-personnalisées basées sur votre réalité de terrain
+👉 Votre seule action : remplir ce questionnaire de 3 minutes et envoyer une photo : https://forms.fillout.com/t/hdEdvdk4wrus
+👉 Le résultat : l'IA génère des visuels authentiques qui renforcent le lien avec vos clients
+Rien ne sera publié sans votre validation."` : ''}
+4. Si pertinent : mention d'un sujet pour le prochain call
+5. Bonne journée + signature ${cs || '[Ton prénom]'}
+
+TONALITÉ : clarté, simplicité, bienveillance, proximité. Humain et professionnel. Pas de jargon.
+SORTIE : uniquement l'email final prêt à envoyer, rien d'autre.`;
+
+const P3 = (tr, ctx) => `${CTX}
+
+MISSION 3 — COACHING POST-CALL
+${ctx ? `Contexte : ${ctx}` : ''}
+Transcription : ${tr}
+
+Tu es un conseiller stratégique personnel : QI 180, direct, lucide, sans complaisance. Expert en psychologie, vente, stratégie. Zéro excuse, orientation résultat.
+
+Fournis :
+
+MÉTRIQUES (0 à 10) :
+-> Découverte & qualification : [score/10]
+-> Argumentaire & valeur : [score/10]
+-> Closing & next step : [score/10]
+
+VÉRITÉ BRUTE :
+-> 2 à 3 erreurs critiques avec extraits/citations exactes du call
+-> 1 à 2 points positifs factuels
+
+UPSELL PRIORITAIRE :
+-> Upsell identifié
+-> Triggers observés (citations du call)
+-> Pitch 20 secondes
+-> 2 phrases à tester au prochain call`;
+
+function switchMission(n, el) {
+  document.querySelectorAll('.mission-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.mission-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`mission${n}`).classList.add('active');
+}
+
+function checkUnlock(val) {
+  if (['coaching', 'mission 3', 'mission3'].includes(val.toLowerCase().trim())) {
+    document.getElementById('m3-lock').style.display = 'none';
+    document.getElementById('m3-form').style.display = 'block';
+  }
+}
+
+const BACKEND_URL = "https://arturin-agent.onrender.com";
+
+async function callAPI(endpoint, payload, loader, btn, result, content, error) {
+  document.getElementById(error).classList.remove('visible');
+  document.getElementById(loader).classList.add('visible');
+  document.getElementById(btn).disabled = true;
+  document.getElementById(result).classList.remove('visible');
+  try {
+    const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    document.getElementById(content).textContent = data.result;
+    document.getElementById(result).classList.add('visible');
+    document.getElementById(result).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return data.result;
+  } catch(e) {
+    document.getElementById(error).textContent = 'Erreur de connexion. Réessaie dans quelques secondes.';
+    document.getElementById(error).classList.add('visible');
+    return null;
+  } finally {
+    document.getElementById(loader).classList.remove('visible');
+    document.getElementById(btn).disabled = false;
+  }
+}
+
+async function runMission1() {
+  const client = document.getElementById('m1-client').value.trim();
+  const tr = document.getElementById('m1-transcription').value.trim();
+  if (!client || !tr) { document.getElementById('m1-error').classList.add('visible'); return; }
+  const ctx = document.getElementById('m1-context').value.trim();
+  const r = await callAPI('/api/mission1', { client, context: ctx, transcription: tr }, 'm1-loader', 'm1-btn', 'm1-result', 'm1-content', 'm1-error');
+  if (r) m1LastResult = r;
+}
+
+async function runMission2() {
+  const prenom = document.getElementById('m2-prenom').value.trim();
+  const content = document.getElementById('m2-content').value.trim();
+  if (!prenom || !content) { document.getElementById('m2-error').classList.add('visible'); return; }
+  const cs = document.getElementById('m2-cs').value.trim();
+  const upsell = document.getElementById('m2-upsell').value;
+  await callAPI('/api/mission2', { prenom, cs, content, upsell }, 'm2-loader', 'm2-btn', 'm2-result', 'm2-content', 'm2-error');
+}
+
+async function runMission3() {
+  const tr = document.getElementById('m3-transcription').value.trim();
+  if (!tr) { document.getElementById('m3-error').classList.add('visible'); return; }
+  const ctx = document.getElementById('m3-context').value.trim();
+  await callAPI('/api/mission3', { transcription: tr, context: ctx }, 'm3-loader', 'm3-btn', 'm3-result', 'm3-content', 'm3-error');
+}
+
+function sendToMission2() {
+  if (m1LastResult) {
+    document.getElementById('m2-content').value = m1LastResult;
+    switchMission(2, document.querySelectorAll('.mission-tab')[1]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function copyResult(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+</script>
+</body>
+</html>
