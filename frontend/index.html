@@ -187,10 +187,10 @@ textarea { min-height: 180px; }
       <div class="result-header">
         <div class="result-title">✅ Email prêt à envoyer</div>
         <div class="result-actions">
-          <button class="btn-sec" onclick="copyResult('m2-content', this)">📋 Copier l'email</button>
+          <button class="btn-sec" onclick="copyResult('m2-output', this)">📋 Copier l'email</button>
         </div>
       </div>
-      <div class="result-content" id="m2-content"></div>
+      <div class="result-content" id="m2-output"></div>
     </div>
   </div>
 
@@ -444,7 +444,7 @@ async function runMission2() {
   if (!prenom || !content) { document.getElementById('m2-error').classList.add('visible'); return; }
   const cs = document.getElementById('m2-cs').value.trim();
   const upsell = document.getElementById('m2-upsell').value;
-  await callAPI('/api/mission2', { prenom, cs, content, upsell }, 'm2-loader', 'm2-btn', 'm2-result', 'm2-content', 'm2-error');
+  await callAPI('/api/mission2', { prenom, cs, content, upsell }, 'm2-loader', 'm2-btn', 'm2-result', 'm2-output', 'm2-error');
 }
 
 async function runMission3() {
