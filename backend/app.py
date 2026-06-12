@@ -158,42 +158,46 @@ Rien ne sera publié sans votre validation.
 
         prompt = f"""{ARTURIN_CONTEXT}
 
-MISSION : Rédige un email de suivi professionnel suite à un call client.
+MISSION : Rédige un email de suivi professionnel suite à un call client Artur'in.
 
 PRÉNOM DU CLIENT : {prenom}
 CS QUI ENVOIE : {cs or "Nesrine"}
 CONTENU DU CALL / CR : {content}
 {f"UPSELL ÉVOQUÉ : {upsell}" if upsell else ""}
 
-RÈGLES ABSOLUES — à ne JAMAIS enfreindre :
-1. Ne JAMAIS reprendre les mots exacts ou citations du client dans l'email
-2. Ne JAMAIS mentionner les plaintes, insatisfactions ou émotions négatives du client
-3. Ne JAMAIS utiliser des formulations dramatiques ou empathiques excessives
-4. Ne JAMAIS mentionner les noms de produits concurrents ou les erreurs passées
-5. Rester positif, orienté solution et tourné vers l'avenir
-6. Email court : 4-5 phrases max par paragraphe, 3 paragraphes max au total
-7. Ton : professionnel, chaleureux, direct. Pas de jargon, pas de superlatifs
+VOICI LE STYLE D'EMAIL ATTENDU CHEZ ARTUR'IN — respecte exactement ce ton et cette structure :
 
-STRUCTURE OBLIGATOIRE :
-Objet : Artur'in - Suivi de notre appel
+Exemple 1 (suivi + proposition) :
+"Bonjour Nicole, bonjour David,
+Merci pour votre temps lors de notre échange ce matin.
+Comme évoqué, les publications réalisées sur vos réseaux sociaux permettent d'assurer une présence régulière et professionnelle de l'agence. En revanche, si l'objectif est d'augmenter davantage votre visibilité auprès de nouvelles personnes, les publications seules ont naturellement leurs limites puisqu'elles sont principalement vues par les personnes qui vous suivent déjà.
+Pour toucher une audience plus large, il est possible de mettre en place des campagnes publicitaires sur Facebook et Instagram. Mon conseil serait de réaliser un premier test avec un budget modéré afin de mesurer concrètement les résultats.
+N'hésitez pas à revenir vers moi après avoir fait le point ensemble. Je reste bien entendu disponible si vous avez la moindre question.
+Je vous souhaite une excellente journée.
+Bien cordialement,
+[Prénom] — Customer Success Coach — Artur'In"
 
-Bonjour {prenom},
+Exemple 2 (suivi simple) :
+"Bonjour Quentin,
+Suite à notre échange, je vous fais un récapitulatif des éléments abordés.
+[Récapitulatif factuel et neutre des points discutés]
+Je vous laisse revenir vers moi dès que vous aurez pu avancer de votre côté.
+Bien entendu, nous restons à votre disposition pour toute question complémentaire.
+Nesrine — Customer Success Coach — Artur'In"
 
-[Paragraphe 1 — 2 phrases max : remerciement sobre + résumé neutre de l'objet du call]
-
-[Paragraphe 2 — 3 phrases max : les actions concrètes décidées ensemble, formulées positivement]
-
-{f"[Paragraphe 3 — proposition naturelle pour {upsell}]" if upsell else ""}
-
-[Dernière ligne : prochaine étape claire + disponibilité]
-
-Bonne journée,
-{cs or "Nesrine"}
+RÈGLES ABSOLUES :
+1. JAMAIS de citations ou mots exacts du client dans l'email
+2. JAMAIS de mention des plaintes, insatisfactions ou erreurs passées
+3. JAMAIS de formulations dramatiques ou d'empathie excessive
+4. Rester factuel, neutre et orienté solutions/actions
+5. Maximum 4-5 lignes par paragraphe
+6. Terminer TOUJOURS par : [Prénom CS] — Customer Success Coach — Artur'In
+7. Formule de politesse : "Bien cordialement" ou "À bientôt"
 
 {site_web_template}
 {selfin_template}
 
-SORTIE : uniquement l'email final, rien d'autre."""
+SORTIE : uniquement l'email final prêt à envoyer, rien d'autre."""
 
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
