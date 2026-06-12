@@ -158,25 +158,42 @@ Rien ne sera publié sans votre validation.
 
         prompt = f"""{ARTURIN_CONTEXT}
 
-MISSION : Rédige un email de suivi professionnel, chaleureux et prêt à envoyer au client.
+MISSION : Rédige un email de suivi professionnel suite à un call client.
 
 PRÉNOM DU CLIENT : {prenom}
-CS QUI ENVOIE : {cs or "[Ton prénom]"}
+CS QUI ENVOIE : {cs or "Nesrine"}
 CONTENU DU CALL / CR : {content}
-{f"UPSELL ÉVOQUÉ : {upsell}" if upsell else "AUCUN UPSELL"}
+{f"UPSELL ÉVOQUÉ : {upsell}" if upsell else ""}
+
+RÈGLES ABSOLUES — à ne JAMAIS enfreindre :
+1. Ne JAMAIS reprendre les mots exacts ou citations du client dans l'email
+2. Ne JAMAIS mentionner les plaintes, insatisfactions ou émotions négatives du client
+3. Ne JAMAIS utiliser des formulations dramatiques ou empathiques excessives
+4. Ne JAMAIS mentionner les noms de produits concurrents ou les erreurs passées
+5. Rester positif, orienté solution et tourné vers l'avenir
+6. Email court : 4-5 phrases max par paragraphe, 3 paragraphes max au total
+7. Ton : professionnel, chaleureux, direct. Pas de jargon, pas de superlatifs
+
+STRUCTURE OBLIGATOIRE :
+Objet : Artur'in - Suivi de notre appel
+
+Bonjour {prenom},
+
+[Paragraphe 1 — 2 phrases max : remerciement sobre + résumé neutre de l'objet du call]
+
+[Paragraphe 2 — 3 phrases max : les actions concrètes décidées ensemble, formulées positivement]
+
+{f"[Paragraphe 3 — proposition naturelle pour {upsell}]" if upsell else ""}
+
+[Dernière ligne : prochaine étape claire + disponibilité]
+
+Bonne journée,
+{cs or "Nesrine"}
+
 {site_web_template}
 {selfin_template}
 
-RÈGLES D'ÉCRITURE :
-- Objet OBLIGATOIRE : "Artur'in - Suivi de notre appel"
-- Commence par un mini-résumé chaleureux avec UN détail humain ou personnel du call
-- Récapitule les points importants discutés + le coaching donné
-- {"Présente naturellement l'upsell " + upsell + " sans être trop commercial" if upsell else "Pas de proposition commerciale"}
-- Si pertinent : mentionne un sujet à aborder au prochain call
-- Termine par "Bonne journée" + signature {cs or "[Ton prénom]"}
-- Tonalité : claire, simple, bienveillante, proximité. Humain et professionnel. Zéro jargon.
-
-SORTIE : uniquement l'email final complet, rien d'autre avant ou après."""
+SORTIE : uniquement l'email final, rien d'autre."""
 
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
