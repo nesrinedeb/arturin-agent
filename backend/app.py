@@ -113,7 +113,11 @@ Satisfaction : [nom du produit] — [ce qui plaît, max 100 caractères]
         result = call_groq(prompt)
         return jsonify({"success": True, "result": result})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"MISSION1 ERROR: {str(e)}")
+        print(f"TRACEBACK: {error_details}")
+        return jsonify({"success": False, "error": str(e), "trace": error_details}), 500
 
 @app.route("/api/mission2", methods=["POST"])
 def mission2():
