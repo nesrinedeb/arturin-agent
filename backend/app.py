@@ -249,6 +249,15 @@ UPSELL PRIORITAIRE
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/test", methods=["GET"])
+def test():
+    try:
+        result = call_groq("Réponds uniquement : OK")
+        return jsonify({"success": True, "result": result, "key_set": bool(GROQ_API_KEY)})
+    except Exception as e:
+        import traceback
+        return jsonify({"success": False, "error": str(e), "trace": traceback.format_exc(), "key_set": bool(GROQ_API_KEY)}), 500
+
 @app.route("/")
 def index():
     return jsonify({"status": "ok", "message": "Artur'in Agent CS — Backend Groq v2"})
