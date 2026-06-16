@@ -8,7 +8,7 @@ CORS(app, origins=["*"])
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-70b-versatile"
+MODEL = "llama3-70b-8192"
 
 ARTURIN_CONTEXT = """Tu es un assistant interne pour l'équipe Customer Success d'Artur'in.
 Artur'in est une plateforme de communication digitale pour les professionnels locaux (agents immobiliers, opticiens, assureurs, pharmaciens, dentistes, avocats, notaires, experts-comptables, coaches sportifs, garagistes...).
@@ -34,6 +34,8 @@ def call_groq(prompt):
     }
     response = requests.post(GROQ_URL, headers=headers, json=body, timeout=60)
     data = response.json()
+    if "choices" not in data:
+        raise Exception(f"Groq error: {data.get('error', {}).get('message', str(data))}")
     return data["choices"][0]["message"]["content"]
 
 @app.route("/api/mission1", methods=["POST"])
