@@ -6,37 +6,38 @@ import requests
 app = Flask(__name__)
 CORS(app, origins=["*"])
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "openai/gpt-oss-120b"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 ARTURIN_CONTEXT = """Tu es un assistant interne pour l'équipe Customer Success d'Artur'in.
 Artur'in est une plateforme de communication digitale pour les professionnels locaux (agents immobiliers, opticiens, assureurs, pharmaciens, dentistes, avocats, notaires, experts-comptables, coaches sportifs, garagistes...).
 Produits Artur'in : publications réseaux sociaux automatisées, newsletter, Seeble (prospection LinkedIn automatisée), Shoot'in (photos pro 30€/mois), Boost'in (publicité Google/Meta dès 50€/mois), site web (295€HT + 70€HT/mois), Multi-sites (59€/établissement), Self'in (gratuit, 10 publications IA personnalisées).
 Renouvellement Essilor : UNIQUEMENT pour les opticiens — 1200€/6 mois ou 2400€/12 mois + Shoot'in offert."""
 
-def call_groq(prompt):
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
+def call_gemini(prompt, system="Tu es un assistant Customer Success pour Artur'in. Tu génères des comptes-rendus de calls internes, structurés et prêts à copier dans Salesforce. Tu respectes EXACTEMENT les formats demandés sans jamais t'en écarter."):
+    headers = {"Content-Type": "application/json"}
     body = {
-        "model": MODEL,
-        "messages": [
-            {
-                "role": "system",
-                "content": "Tu es un assistant Customer Success pour Artur'in. Tu génères des comptes-rendus de calls internes, structurés et prêts à copier dans Salesforce. Tu respectes EXACTEMENT les formats demandés sans jamais t'en écarter."
-            },
-            {"role": "user", "content": prompt}
+        "system_instruction": {
+            "parts": [{"text": system}]
+        },
+        "contents": [
+            {"parts": [{"text": prompt}]}
         ],
-        "max_tokens": 2000,
-        "temperature": 0.2
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 2000
+        }
     }
-    response = requests.post(GROQ_URL, headers=headers, json=body, timeout=60)
+    response = requests.post(
+        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+        headers=headers,
+        json=body,
+        timeout=120
+    )
     data = response.json()
-    if "choices" not in data:
-        raise Exception(f"Groq error: {data.get('error', {}).get('message', str(data))}")
-    return data["choices"][0]["message"]["content"]
+    if "candidates" not in data:
+        raise Exception(f"Gemini error: {data}")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 @app.route("/api/mission1", methods=["POST"])
 def mission1():
@@ -112,7 +113,7 @@ Suggestion : [nom du produit] — [ce qu'il propose, max 100 caractères]
 Satisfaction : [nom du produit] — [ce qui plaît, max 100 caractères]
 [Si aucun feedback produit : omettre cette section]"""
 
-        result = call_groq(prompt)
+        result = call_gemini(prompt)
         return jsonify({"success": True, "result": result})
     except Exception as e:
         import traceback
@@ -205,7 +206,7 @@ RÈGLES ABSOLUES :
 
 SORTIE : uniquement l'email final prêt à envoyer, rien d'autre."""
 
-        result = call_groq(prompt)
+        result = call_gemini(prompt)
         return jsonify({"success": True, "result": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -250,7 +251,7 @@ UPSELL PRIORITAIRE
    • [Phrase 1]
    • [Phrase 2]"""
 
-        result = call_groq(prompt)
+        result = call_gemini(prompt)
         return jsonify({"success": True, "result": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -258,15 +259,15 @@ UPSELL PRIORITAIRE
 @app.route("/api/test", methods=["GET"])
 def test():
     try:
-        result = call_groq("Réponds uniquement : OK")
-        return jsonify({"success": True, "result": result, "key_set": bool(GROQ_API_KEY)})
+        result = call_gemini("Réponds uniquement : OK")
+        return jsonify({"success": True, "result": result, "key_set": bool(GEMINI_API_KEY)})
     except Exception as e:
         import traceback
-        return jsonify({"success": False, "error": str(e), "trace": traceback.format_exc(), "key_set": bool(GROQ_API_KEY)}), 500
+        return jsonify({"success": False, "error": str(e), "trace": traceback.format_exc(), "key_set": bool(GEMINI_API_KEY)}), 500
 
 @app.route("/")
 def index():
-    return jsonify({"status": "ok", "message": "Artur'in Agent CS — Backend Groq v2"})
+    return jsonify({"status": "ok", "message": "Artur'in Agent CS — Backend Gemini v3"})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
