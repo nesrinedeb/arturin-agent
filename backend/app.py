@@ -8,7 +8,7 @@ CORS(app, origins=["*"])
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-8b-instant"
+MODEL = "openai/gpt-oss-120b"
 
 ARTURIN_CONTEXT = """Tu es un assistant interne pour l'équipe Customer Success d'Artur'in.
 Artur'in est une plateforme de communication digitale pour les professionnels locaux (agents immobiliers, opticiens, assureurs, pharmaciens, dentistes, avocats, notaires, experts-comptables, coaches sportifs, garagistes...).
